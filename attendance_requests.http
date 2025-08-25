@@ -18,6 +18,6 @@ Content-Type: application/json
 ###
 
 ### Get Attendance History
-GET http://localhost:8080/api/attendance?user_id=user1004&limit=10
+GET http://localhost:8080/api/attendance?user_id=user002&limit=10
 Accept: application/json
 
