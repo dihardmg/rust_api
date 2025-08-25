@@ -1,6 +1,6 @@
 use sea_orm_migration::prelude::*;
 use sea_orm::Statement;
-use chrono::{Utc, Duration};
+use chrono::{Utc};
 
 #[derive(DeriveMigrationName)]
 pub struct Migration;
