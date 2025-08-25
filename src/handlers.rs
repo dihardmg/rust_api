@@ -1,10 +1,19 @@
-use actix_web::{web, HttpResponse};
-use sea_orm::{ActiveModelTrait, EntityTrait, Set, QueryFilter, ColumnTrait, QueryOrder, QuerySelect};
+use actix_web::{HttpResponse, web};
 use chrono::Utc;
-
-use crate::models::{ClockRequest, AttendanceDto};
-use crate::responses::ApiResponse;
+use sea_orm::{
+    ActiveModelTrait, ColumnTrait, EntityTrait, QueryFilter, QueryOrder, QuerySelect, Set,
+};
+use serde::Serialize;
 use crate::entity::attendance;
+use crate::models::{AttendanceDto, ClockRequest};
+use crate::responses::ApiResponse;
+use std::collections::HashMap;
+
+#[derive(Serialize)]
+struct ErrorResponse<'a> {
+    status: &'a str,
+    message: &'a str,
+}
 
 pub async fn clock_in(
     db: web::Data<sea_orm::DatabaseConnection>,
@@ -29,10 +38,8 @@ pub async fn clock_in(
         }
         Ok(None) => {}
         Err(e) => {
-            return HttpResponse::InternalServerError().json(ApiResponse::<()>::error(&format!(
-                "DB error: {}",
-                e
-            )))
+            return HttpResponse::InternalServerError()
+                .json(ApiResponse::<()>::error(&format!("DB error: {}", e)));
         }
     }
 
@@ -58,10 +65,8 @@ pub async fn clock_in(
             };
             HttpResponse::Ok().json(ApiResponse::success("Clock-in recorded", Some(dto)))
         }
-        Err(e) => HttpResponse::InternalServerError().json(ApiResponse::<()>::error(&format!(
-            "Insert error: {}",
-            e
-        ))),
+        Err(e) => HttpResponse::InternalServerError()
+            .json(ApiResponse::<()>::error(&format!("Insert error: {}", e))),
     }
 }
 
@@ -100,30 +105,28 @@ pub async fn clock_out(
                     };
                     HttpResponse::Ok().json(ApiResponse::success("Clock-out recorded", Some(dto)))
                 }
-                Err(e) => HttpResponse::InternalServerError().json(ApiResponse::<()>::error(&format!(
-                    "Update error: {}",
-                    e
-                ))),
+                Err(e) => HttpResponse::InternalServerError()
+                    .json(ApiResponse::<()>::error(&format!("Update error: {}", e))),
             }
         }
-        Ok(None) => HttpResponse::NotFound()
-            .json(ApiResponse::<()>::error("No active clock-in session found for this user")),
-        Err(e) => HttpResponse::InternalServerError().json(ApiResponse::<()>::error(&format!(
-            "DB error: {}",
-            e
-        ))),
+        Ok(None) => HttpResponse::NotFound().json(ApiResponse::<()>::error(
+            "No active clock-in session found for this user",
+        )),
+        Err(e) => HttpResponse::InternalServerError()
+            .json(ApiResponse::<()>::error(&format!("DB error: {}", e))),
     }
 }
 
+
 pub async fn get_history(
     db: web::Data<sea_orm::DatabaseConnection>,
-    query: web::Query<std::collections::HashMap<String, String>>,
+    query: web::Query<HashMap<String, String>>,
 ) -> HttpResponse {
     let uid = query.get("user_id").map(|s| s.as_str());
     let limit = query
         .get("limit")
         .and_then(|s| s.parse::<u64>().ok())
-        .unwrap_or(50u64);
+        .unwrap_or(50);
 
     let mut find = attendance::Entity::find().order_by_desc(attendance::Column::ClockInTime);
     if let Some(u) = uid {
@@ -132,6 +135,14 @@ pub async fn get_history(
 
     match find.limit(limit).all(db.get_ref()).await {
         Ok(rows) => {
+            if rows.is_empty() {
+                // data → 404 Not Found
+                return HttpResponse::NotFound().json(ErrorResponse {
+                    status: "error",
+                    message: "Attendance record not found",
+                });
+            }
+
             let data: Vec<AttendanceDto> = rows
                 .into_iter()
                 .map(|r| AttendanceDto {
@@ -143,11 +154,12 @@ pub async fn get_history(
                     updated_at: r.updated_at,
                 })
                 .collect();
+
             HttpResponse::Ok().json(ApiResponse::success("History fetched", Some(data)))
         }
-        Err(e) => HttpResponse::InternalServerError().json(ApiResponse::<()>::error(&format!(
-            "DB error: {}",
-            e
-        ))),
+        Err(e) => HttpResponse::InternalServerError().json(ErrorResponse {
+            status: "error",
+            message: &format!("DB error: {}", e),
+        }),
     }
 }
