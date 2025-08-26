@@ -1,0 +1,82 @@
+### Clock In
+POST http://localhost:8080/api/attendance/clockin
+Content-Type: application/json
+
+{
+  "user_id": "user1002"
+}
+
+
+### Clock Out
+POST http://localhost:8080/api/attendance/clockout
+Content-Type: application/json
+
+{
+  "user_id": "user1002"
+}
+
+###
+
+### Get Attendance History
+GET http://localhost:8080/api/attendance?user_id=user0066&limit=10
+Accept: application/json
+
+### ===== BANNER ANNOUNCEMENT API =====
+
+### Create Banner
+POST http://localhost:8080/api/banners
+Content-Type: application/json
+
+{
+  "title": "welcome banner 2025",
+  "content": "Happy New Year! Enjoy 50% off on all items until January 31st, 2025.",
+  "start_date": "2025-01-01 00:00:00",
+  "end_date": "2025-12-31 23:59:59"
+}
+
+### Upload Banner Image (standalone)
+POST http://localhost:8080/api/banners/upload
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="image"; filename="banner.jpg"
+Content-Type: image/jpeg
+
+< ./path/to/your/image.jpg
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+### Update Banner Image (for existing banner)
+PUT http://localhost:8080/api/banners/1/image
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="image"; filename="new-banner.jpg"
+Content-Type: image/jpeg
+
+< ./path/to/your/new-image.jpg
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+### Get All Banners
+GET http://localhost:8080/api/banners?limit=10
+Accept: application/json
+
+### Get Active Banner (with date range check)
+GET http://localhost:8080/api/banners/active
+Accept: application/json
+
+### Update Banner
+PUT http://localhost:8080/api/banners/1
+Content-Type: application/json
+
+{
+  "title": "Updated Title",
+  "content": "Updated content for the banner announcement.",
+  "start_date": "2025-02-01 00:00:00",
+  "end_date": "2025-02-28 23:59:59",
+  "is_active": true
+}
+
+### Delete Banner
+DELETE http://localhost:8080/api/banners/1
+Accept: application/json
+

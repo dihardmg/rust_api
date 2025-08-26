@@ -29,9 +29,12 @@ services:
     environment:
       # Menambahkan DATABASE_URL untuk aplikasi Rust
       DATABASE_URL: mysql://root:${MYSQL_ROOT_PASSWORD}@db:3306/${MYSQL_DATABASE}?allowPublicKeyRetrieval=true
+    volumes:
+      - uploads_data:/usr/src/app/uploads
     depends_on:
       db:
         condition: service_healthy
 
 volumes:
   db_data:
+  uploads_data:

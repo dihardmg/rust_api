@@ -17,6 +17,9 @@ RUN apt-get update && \
 # Ini akan mengompilasi semua dependensi dan binary
 RUN cargo build --release
 
+# Buat direktori uploads untuk file uploads
+RUN mkdir -p uploads/banners
+
 # Buat skrip entrypoint.sh dapat dieksekusi
 RUN chmod +x entrypoint.sh
 

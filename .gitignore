@@ -1,0 +1,6 @@
+/target
+/.claude
+/.venv
+.env
+/.idea
+
