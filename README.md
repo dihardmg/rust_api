@@ -7,4 +7,4 @@
     - data migration ✅
     - create database mysql rustdb ✅
     - Auto running app `Server running at http://localhost:8080` ✅
-3. Endpoints file http request testing:  `attendance_requests.http` ✅
+3. Endpoints file http request testing:  `Postman.http` ✅

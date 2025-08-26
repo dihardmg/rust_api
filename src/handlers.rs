@@ -384,6 +384,11 @@ pub async fn get_banners(
         .await
     {
         Ok(rows) => {
+            if rows.is_empty() {
+                return HttpResponse::BadRequest()
+                    .json(ApiResponse::<()>::error("No banners found"));
+            }
+            
             let data: Vec<BannerDto> = rows
                 .into_iter()
                 .map(|r| BannerDto {
